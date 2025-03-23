@@ -136,6 +136,59 @@ layoutClass: gap-16
 <img border="rounded" src="/information-dense.svg" alt="">
 
 ---
+layout: two-cols-header
+layoutClass: gap-16
+---
+
+# Latent Similarity
+
+::left::
+
+<div v-mark.box.red=1>
+  <p text="green">Information Dense</p>
+  <p text="lime">Similar images are close together</p>
+  <p text="yellow">Images are close to relevant text</p>
+</div>
+<p text="orange">Representations are localized</p>
+<p text="red">Representations are spatially aware</p>
+
+::right::
+<p v-click=1>CLIP!</p>
+
+
+---
+layout: two-cols
+layoutClass: gap-16
+---
+
+# Latent Similarity
+
+## CLIP
+
+- Images and text are embedded in the same embedding space.
+- Embedding space where image embeddings are _close_ to embeddings of text captions describing them.
+- Image model needs to learn relevant + descriptive image features.
+- Dense: Irrelevant details don't change caption, so don't change embedding.
+
+::right::
+![](/clip-embedding.svg){id="clip"}
+
+<style>
+#clip {
+  height: 500px
+}
+</style>
+
+---
+---
+
+# CLIP Training
+
+<CanvasV2 />
+
+
+
+---
 
 # Navigation
 
