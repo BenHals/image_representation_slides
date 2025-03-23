@@ -6,6 +6,7 @@
 export default {
   setup() {
     const hello = ref('Hello!');
+    hello = 2;
 
     return {
       hello,

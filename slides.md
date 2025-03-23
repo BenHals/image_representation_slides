@@ -1,92 +1,140 @@
 ---
-# You can also start simply with 'default'
-theme: seriph
-# random image from a curated Unsplash collection by Anthony
-# like them? see https://unsplash.com/collections/94734566/slidev
-background: https://cover.sli.dev
-# some information about your slides (markdown enabled)
+theme: apple-basic
 title: Welcome to Slidev
 info: |
-  ## Slidev Starter Template
-  Presentation slides for developers.
-
-  Learn more at [Sli.dev](https://sli.dev)
-# apply unocss classes to the current slide
+  ## Slidev Image Representation Presentation
 class: text-center
-# https://sli.dev/features/drawing
-drawings:
-  persist: false
-# slide transition: https://sli.dev/guide/animations.html#slide-transitions
 transition: slide-left
 # enable MDC Syntax: https://sli.dev/features/mdc
 mdc: true
+layout: quote
 ---
 
-# Welcome to Slidev
-
-Presentation slides for developers
-
-<div @click="$slidev.nav.next" class="mt-12 py-1" hover:bg="white op-10">
-  Press Space for next page <carbon:arrow-right />
-</div>
-
-<div class="abs-br m-6 text-xl">
-  <button @click="$slidev.nav.openInEditor" title="Open in Editor" class="slidev-icon-btn">
-    <carbon:edit />
-  </button>
-  <a href="https://github.com/slidevjs/slidev" target="_blank" class="slidev-icon-btn">
-    <carbon:logo-github />
-  </a>
-</div>
+# Image Representations
 
 <!--
 The last comment block of each slide will be treated as slide notes. It will be visible and editable in Presenter Mode along with the slide. [Read more in the docs](https://sli.dev/guide/syntax.html#notes)
 -->
 
 ---
-transition: fade-out
+layout: quote
+---
+# An Image Representation Encodes An Image into a Numeric Format
+
+
+<!-- <br> -->
+<!-- <br> -->
+<!-- <br> -->
+<!-- <div grid="~ cols-3 gap-3" m="t-2"> -->
+<!--   <div text-center> -->
+<!--     &bull; Numeric Format -->
+<!--     <img border="rounded" src="https://github.com/slidevjs/themes/blob/main/screenshots/theme-default/01.png?raw=true" alt=""> -->
+<!--   </div> -->
+<!--   <div text-center> -->
+<!--     &bull; Information Dense -->
+<!--     <img border="rounded" src="https://github.com/slidevjs/themes/blob/main/screenshots/theme-default/01.png?raw=true" alt=""> -->
+<!--   </div> -->
+<!--   <div text-center> -->
+<!--     &bull; Useful for Tasks -->
+<!--     <img border="rounded" src="https://github.com/slidevjs/themes/blob/main/screenshots/theme-default/01.png?raw=true" alt=""> -->
+<!--   </div> -->
+<!-- </div> -->
+
+
+---
+layout: two-cols
+layoutClass: gap-16
 ---
 
-# What is Slidev?
+# Numeric Format
 
-Slidev is a slides maker and presenter designed for developers, consist of the following features
+- A neural net can only consume data in vector format.
 
-- 📝 **Text-based** - focus on the content with Markdown, and then style them later
-- 🎨 **Themable** - themes can be shared and re-used as npm packages
-- 🧑‍💻 **Developer Friendly** - code highlighting, live coding with autocompletion
-- 🤹 **Interactive** - embed Vue components to enhance your expressions
-- 🎥 **Recording** - built-in recording and camera view
-- 📤 **Portable** - export to PDF, PPTX, PNGs, or even a hostable SPA
-- 🛠 **Hackable** - virtually anything that's possible on a webpage is possible in Slidev
-<br>
-<br>
+- How do we best represent an 2d image of pixels?
 
-Read more about [Why Slidev?](https://sli.dev/guide/why)
+- How do we preserve spatial information?
 
-<!--
-You can have `style` tag in markdown to override the style for the current page.
-Learn more: https://sli.dev/features/slide-scope-style
--->
+::right::
+
+<img border="rounded" src="/numeric-format.svg" alt="">
+
+---
+layout: two-cols
+layoutClass: gap-16
+---
+
+# Embeddings
+
+- Vector representation => placing into an _embedding space_.
+- Each position in the vector represents a _dimension_ in the space.
+
+::right::
+
+<img border="rounded" src="/embedding-space.svg" alt="">
+
+---
+---
+
+# Lots of different embedding spaces
+
+- CLIP
+- DINO
+- SigLIP
+- SigLIP2
+- iBOT
+- LoCAP
+- TIPS
+- ...
+- <span v-mark.underline.red><v-click>_Which one to choose?_</v-click></span>
+
+---
+layout: quote
+---
+
+# Different Image Representations are Trained to have Different <span v-mark.circle.red>Properties</span>
+
+---
+layout: two-cols-header
+layoutClass: gap-16
+---
+
+# Nice things to have:
+
+::left::
+
+![](/prop-complexity.svg){id="complexity"}
+
+::right::
+<p text="green">Information Dense</p>
+<p text="lime">Similar images are close together</p>
+<p text="yellow">Images are close to relevant text</p>
+<p text="orange">Representations are localized</p>
+<p text="red">Representations are spatially aware</p>
 
 <style>
-h1 {
-  background-color: #2B90B6;
-  background-image: linear-gradient(45deg, #4EC5D4 10%, #146b8c 20%);
-  background-size: 100%;
-  -webkit-background-clip: text;
-  -moz-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  -moz-text-fill-color: transparent;
+#complexity {
+  height: 200px;
+  padding-left: 350px
 }
 </style>
 
-<!--
-Here is another comment.
--->
 
 ---
-transition: slide-up
-level: 2
+layout: two-cols
+layoutClass: gap-16
+---
+
+# Information Dense
+
+- Encode only the most important information
+- Discard noise
+
+- <span v-mark.underline.orange>_noisy images should map to the same representation_</span>
+
+::right::
+
+<img border="rounded" src="/information-dense.svg" alt="">
+
 ---
 
 # Navigation
