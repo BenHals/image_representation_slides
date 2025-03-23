@@ -26,4 +26,4 @@ function inc() {
         +
       </button>
     </div>
-te>
+</template>
