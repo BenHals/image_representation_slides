@@ -20,7 +20,7 @@ function createAnimation(): geo.Animation<SimulationState> {
     trainDataset: [...Array(n_train_examples).keys()].map((i) => {
       return {
         o: 0.0,
-        tl: {x: 0.0, y: 0.1*i}
+        tl: { x: 0.01, y: 0.1 * (i + 1) }
       }
     })
   }
@@ -51,13 +51,13 @@ function createAnimation(): geo.Animation<SimulationState> {
 }
 
 let world = {
-  tl: {x: 0.0, y: 0.0},
+  tl: { x: 0.0, y: 0.0 },
   w: 0.0,
   h: 0.0,
 }
 
 let viewport = {
-  tl: {x: 0.0, y: 0.0},
+  tl: { x: 0.0, y: 0.0 },
   w: 0.0,
   h: 0.0,
   s: 1.0,
@@ -87,8 +87,8 @@ function handleResize() {
 onMounted(() => {
   handleResize()
   ctx.value = customCanvas.value!.getContext('2d')
-  customCanvas.value!.onmousedown = () => {handleDrag = true}
-  customCanvas.value!.onmouseup = () => {handleDrag = false}
+  customCanvas.value!.onmousedown = () => { handleDrag = true }
+  customCanvas.value!.onmouseup = () => { handleDrag = false }
   customCanvas.value!.onmousemove = (e: MouseEvent) => {
     if (!handleDrag) return;
 
@@ -97,8 +97,8 @@ onMounted(() => {
     const propMovementX = (e.movementX / bb.width) * customCanvas.value!.width
     const propMovementY = (e.movementY / bb.height) * customCanvas.value!.height
 
-    viewport.tl.x += -propMovementX * 1/geo.viewportScaling(viewport);
-    viewport.tl.y += -propMovementY * 1/geo.viewportScaling(viewport);
+    viewport.tl.x += -propMovementX * 1 / geo.viewportScaling(viewport);
+    viewport.tl.y += -propMovementY * 1 / geo.viewportScaling(viewport);
     draw(sim(prog.value));
   }
 
@@ -107,8 +107,8 @@ onMounted(() => {
     let scaleChange = (viewport.s + scaleDelta) / viewport.s
 
     const bb = customCanvas.value!.getBoundingClientRect();
-    const x = viewport.tl.x + Math.floor( (e.clientX - bb.left) / bb.width * (customCanvas.value!.width * viewport.s / viewport.sharpness));
-    const y = viewport.tl.y + Math.floor( (e.clientY - bb.top) / bb.height * (customCanvas.value!.height * viewport.s / viewport.sharpness));
+    const x = viewport.tl.x + Math.floor((e.clientX - bb.left) / bb.width * (customCanvas.value!.width * viewport.s / viewport.sharpness));
+    const y = viewport.tl.y + Math.floor((e.clientY - bb.top) / bb.height * (customCanvas.value!.height * viewport.s / viewport.sharpness));
 
     console.log(viewport, x, y)
     viewport.s *= scaleChange
@@ -125,7 +125,7 @@ onMounted(() => {
     draw(sim(prog.value))
 
 
-    
+
   }
   draw(sim(prog.value))
 })
@@ -148,9 +148,9 @@ function sim(p: number): SimulationState {
   //   x: (1 - stage_p) * prev_stage.state.rect_pos.x + stage_p * curr_stage.state.rect_pos.x,
   //   y: (1 - stage_p) * prev_stage.state.rect_pos.y + stage_p * curr_stage.state.rect_pos.y,
   // }
-  
+
   return s
-    // rect_pos: rect_world_prop_pos
+  // rect_pos: rect_world_prop_pos
 }
 
 function draw(state: SimulationState) {
@@ -160,15 +160,42 @@ function draw(state: SimulationState) {
   ctx.value?.clearRect(0.0, 0.0, viewport.w, viewport.h)
   ctx.value!.setTransform(geo.viewportScaling(viewport), 0, 0, geo.viewportScaling(viewport), world_vp.x, world_vp.y)
 
-  // let rect_wp = geo.toWorldAbsolute(state.rect_pos, world)
-  // ctx.value?.fillRect(rect_wp.x, rect_wp.y, 0.1*world.w, 0.1*world.w)
   console.log(state.trainDataset)
+  // draw Dataset
+  const datasetBoxTl = geo.toWorldAbsolute({ x: 0.005, y: 0.090 }, world)
+  console.log(datasetBoxTl)
+
+  ctx.value!.strokeStyle = `rgba(0, 0, 0, 1.0)`
+  ctx.value!.strokeRect(
+    datasetBoxTl.x,
+    datasetBoxTl.y,
+    0.11 * world.w,
+    (state.trainDataset.length * 0.1 + 0.02) * world.h
+  )
+
+  ctx.value!.fillStyle = `rgba(0, 0, 0, 1.0)`
+  ctx.value!.fillText("Dataset", datasetBoxTl.x, datasetBoxTl.y - 0.01 * world.h)
+
   for (const te of state.trainDataset) {
+    // Outer box
     let rect_wp = geo.toWorldAbsolute(te.tl, world)
-    ctx.value!.fillStyle = `rgba(0, 0, 0, ${te.o})`
-    ctx.value?.fillRect(rect_wp.x, rect_wp.y, 0.1*world.w, 0.1*world.h)
+    ctx.value!.strokeStyle = `rgba(0, 0, 0, ${te.o})`
+    ctx.value?.strokeRect(rect_wp.x, rect_wp.y, 0.1 * world.w, 0.1 * world.h)
+
+    // Img icon
+    ctx.value!.strokeStyle = `rgba(0, 0, 255, ${te.o})`
+    let im_wp = geo.toWorldAbsolute({ x: te.tl.x + 0.01, y: te.tl.y + 0.01 }, world)
+    ctx.value?.strokeRect(im_wp.x, im_wp.y, 0.03 * world.w, 0.08 * world.h)
+
+    // Caption Icon
+    ctx.value!.strokeStyle = `rgba(0, 255, 0, ${te.o})`
+    let cap_wp = geo.toWorldAbsolute({ x: te.tl.x + 0.05, y: te.tl.y + 0.03 }, world)
+    ctx.value?.strokeRect(cap_wp.x, cap_wp.y, 0.04 * world.w, 0.04 * world.h)
+    ctx.value!.fillStyle = `rgba(0, 255, 0, ${te.o})`
+    ctx.value!.fillText("Caption", cap_wp.x, cap_wp.y + 0.04 * world.h)
   }
 
+  ctx.value!.strokeStyle = `rgba(0, 0, 0, 1.0)`
   ctx.value!.strokeRect(world.tl.x, world.tl.y, world.w, world.h)
 }
 
