@@ -180,6 +180,89 @@ layoutClass: gap-16
 </style>
 
 ---
+transition: fade
+---
+
+# CLIP Training
+
+![clip](/clip-train-1.svg)
+
+<style>
+img {
+  height: 400px
+}
+</style>
+
+---
+transition: fade
+---
+
+# CLIP Training
+
+![clip](/clip-train-2.svg)
+
+<style>
+img {
+  height: 424px
+}
+</style>
+
+---
+transition: fade
+---
+
+# CLIP Training
+
+![clip](/clip-train-3.svg)
+
+<style>
+img {
+  height: 407.5px
+}
+</style>
+
+---
+transition: fade
+---
+
+# CLIP Training
+
+![clip](/clip-train-4.svg)
+
+<style>
+img {
+  height: 407.5px
+}
+</style>
+
+---
+transition: fade
+---
+
+# CLIP Training
+
+![clip](/clip-train-5.svg)
+
+<style>
+img {
+  height: 407.5px
+}
+</style>
+
+---
+transition: fade
+---
+
+# CLIP Training
+
+![clip](/clip-train-6.svg)
+
+<style>
+img {
+  height: 407.5px
+}
+</style>
+---
 ---
 
 # CLIP Training

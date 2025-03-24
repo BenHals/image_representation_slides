@@ -139,22 +139,15 @@ function sim(p: number): SimulationState {
   let stage_p = (curr_stage.ep - curr_stage.sp) > 0 ? (p - curr_stage.sp) / (curr_stage.ep - curr_stage.sp) : curr_stage.ep
 
   let s = geo.lerpObj(prev_stage.state, curr_stage.state, stage_p)
-  // console.log("SIM")
-  // console.log(prev_stage)
-  // console.log(curr_stage)
-  // console.log(s)
-
-  // let rect_world_prop_pos = {
-  //   x: (1 - stage_p) * prev_stage.state.rect_pos.x + stage_p * curr_stage.state.rect_pos.x,
-  //   y: (1 - stage_p) * prev_stage.state.rect_pos.y + stage_p * curr_stage.state.rect_pos.y,
-  // }
 
   return s
-  // rect_pos: rect_world_prop_pos
 }
 
 function draw(state: SimulationState) {
   console.log("draw")
+  handleResize()
+  console.log(ctx.value)
+  console.log(world, viewport)
   let world_vp = geo.worldToViewport(world.tl, world, viewport)
   ctx.value!.resetTransform()
   ctx.value?.clearRect(0.0, 0.0, viewport.w, viewport.h)
@@ -166,12 +159,22 @@ function draw(state: SimulationState) {
   console.log(datasetBoxTl)
 
   ctx.value!.strokeStyle = `rgba(0, 0, 0, 1.0)`
-  ctx.value!.strokeRect(
+  ctx.value!.lineWidth = 2
+  ctx.value!.beginPath()
+  ctx.value!.roundRect(
     datasetBoxTl.x,
     datasetBoxTl.y,
     0.11 * world.w,
-    (state.trainDataset.length * 0.1 + 0.02) * world.h
+    (state.trainDataset.length * 0.1 + 0.02) * world.h,
+    6
   )
+  ctx.value!.stroke()
+  // ctx.value!.strokeRect(
+  //   datasetBoxTl.x,
+  //   datasetBoxTl.y,
+  //   0.11 * world.w,
+  //   (state.trainDataset.length * 0.1 + 0.02) * world.h
+  // )
 
   ctx.value!.fillStyle = `rgba(0, 0, 0, 1.0)`
   ctx.value!.fillText("Dataset", datasetBoxTl.x, datasetBoxTl.y - 0.01 * world.h)
@@ -180,19 +183,49 @@ function draw(state: SimulationState) {
     // Outer box
     let rect_wp = geo.toWorldAbsolute(te.tl, world)
     ctx.value!.strokeStyle = `rgba(0, 0, 0, ${te.o})`
-    ctx.value?.strokeRect(rect_wp.x, rect_wp.y, 0.1 * world.w, 0.1 * world.h)
+
+    ctx.value!.beginPath()
+    ctx.value!.roundRect(
+      rect_wp.x,
+      rect_wp.y,
+      0.1 * world.w,
+      0.1 * world.h,
+      6
+    )
+    ctx.value!.stroke()
+    // ctx.value?.strokeRect(rect_wp.x, rect_wp.y, 0.1 * world.w, 0.1 * world.h)
 
     // Img icon
-    ctx.value!.strokeStyle = `rgba(0, 0, 255, ${te.o})`
+    ctx.value!.strokeStyle = `rgba(34, 139, 230, ${te.o})`
     let im_wp = geo.toWorldAbsolute({ x: te.tl.x + 0.01, y: te.tl.y + 0.01 }, world)
-    ctx.value?.strokeRect(im_wp.x, im_wp.y, 0.03 * world.w, 0.08 * world.h)
+
+    ctx.value!.beginPath()
+    ctx.value!.roundRect(
+      im_wp.x,
+      im_wp.y,
+      0.03 * world.w,
+      0.08 * world.h,
+      6
+    )
+    ctx.value!.stroke()
+    // ctx.value?.strokeRect(im_wp.x, im_wp.y, 0.03 * world.w, 0.08 * world.h)
 
     // Caption Icon
-    ctx.value!.strokeStyle = `rgba(0, 255, 0, ${te.o})`
+    ctx.value!.strokeStyle = `rgba(255, 146, 43, ${te.o})`
+    ctx.value!.fillStyle = `rgba(255, 146, 43, ${te.o})`
     let cap_wp = geo.toWorldAbsolute({ x: te.tl.x + 0.05, y: te.tl.y + 0.03 }, world)
-    ctx.value?.strokeRect(cap_wp.x, cap_wp.y, 0.04 * world.w, 0.04 * world.h)
-    ctx.value!.fillStyle = `rgba(0, 255, 0, ${te.o})`
-    ctx.value!.fillText("Caption", cap_wp.x, cap_wp.y + 0.04 * world.h)
+    // ctx.value?.strokeRect(cap_wp.x, cap_wp.y, 0.04 * world.w, 0.04 * world.h)
+    ctx.value!.beginPath()
+    ctx.value!.roundRect(
+      cap_wp.x,
+      cap_wp.y,
+      0.04 * world.w,
+      0.04 * world.h,
+      6
+    )
+    ctx.value!.stroke()
+    ctx.value!.font = '8px sans-serif'
+    ctx.value!.fillText("Caption", cap_wp.x + 0.005*world.w, cap_wp.y + 0.03 * world.h)
   }
 
   ctx.value!.strokeStyle = `rgba(0, 0, 0, 1.0)`
