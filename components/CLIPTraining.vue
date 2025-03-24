@@ -8,21 +8,53 @@ interface TrainExampleDS {
   tl: geo.WorldPropPoint,
   o: number
 }
+interface DatasetEmbedding{
+  start: geo.WorldPropPoint,
+  end: geo.WorldPropPoint,
+  type: string,
+  o: number,
+  prog: number
+}
+
 interface SimulationState {
+  trainDatasetPadding: number,
   trainDataset: TrainExampleDS[],
+  datasetEmbeddings: DatasetEmbedding[]
 }
 
 
 function createAnimation(): geo.Animation<SimulationState> {
   const n_train_examples = 5
+  const padding = 0.01
   let stages: geo.AnimationStage<SimulationState>[] = []
   let curr_state = {
+    trainDatasetPadding: padding,
     trainDataset: [...Array(n_train_examples).keys()].map((i) => {
       return {
         o: 0.0,
-        tl: { x: 0.01, y: 0.1 * (i + 1) }
+        tl: { x: 0.01, y: (0.1 + padding) * (i + 1) }
+      }
+    }),
+    datasetEmbeddings: [
+      ...[...Array(n_train_examples).keys()].map((i) => {
+      return {
+        o: 0.0,
+        start: { x: 0.11, y: (0.1 + padding) * (i + 1) + 0.1/2 },
+        end: { x: 0.21, y: (0.1 + padding) * (i + 1) + 0.1/2 },
+        prog: 0.0,
+        type: "image"
+      }
+    }), 
+    ...[...Array(n_train_examples).keys()].map((i) => {
+      return {
+        o: 0.0,
+        start: { x: 0.11, y: (0.1 + padding) * (i + 1) + 0.1/2 },
+        end: { x: 0.21, y: (0.1 + padding) * (i + 1) + 0.1 },
+        prog: 0.0,
+        type: "caption"
       }
     })
+    ]
   }
   let prev_p = 0.0
   let curr_p = 0.0
@@ -37,6 +69,20 @@ function createAnimation(): geo.Animation<SimulationState> {
 
     console.log(curr_state)
     curr_state.trainDataset[i].o = 1.0
+    stages.push({ state: curr_state, sp: prev_p, ep: curr_p })
+    curr_state = structuredClone(curr_state)
+  }
+  for (let i in [...Array(n_train_examples).keys()]) {
+    prev_p = curr_p
+    curr_p = Math.min(1.0, curr_p + 0.1)
+
+    i = parseInt(i)
+    console.log(curr_state)
+    console.log(curr_state.datasetEmbeddings.length, i, i+n_train_examples)
+    curr_state.datasetEmbeddings[i].o = 1.0
+    curr_state.datasetEmbeddings[i].prog = 1.0
+    curr_state.datasetEmbeddings[i+n_train_examples].o = 1.0
+    curr_state.datasetEmbeddings[i+n_train_examples].prog = 1.0
     stages.push({ state: curr_state, sp: prev_p, ep: curr_p })
     curr_state = structuredClone(curr_state)
   }
@@ -86,6 +132,11 @@ function handleResize() {
 
 onMounted(() => {
   handleResize()
+  var myFont = new FontFace('myFont', 'url(public/Excalifont-Regular.woff2)');
+  myFont.load().then(function(font){
+    document.fonts.add(font);
+    console.log('Font loaded');
+  });
   ctx.value = customCanvas.value!.getContext('2d')
   customCanvas.value!.onmousedown = () => { handleDrag = true }
   customCanvas.value!.onmouseup = () => { handleDrag = false }
@@ -155,7 +206,7 @@ function draw(state: SimulationState) {
 
   console.log(state.trainDataset)
   // draw Dataset
-  const datasetBoxTl = geo.toWorldAbsolute({ x: 0.005, y: 0.090 }, world)
+  const datasetBoxTl = geo.toWorldAbsolute({ x: 0.005, y: 0.1 }, world)
   console.log(datasetBoxTl)
 
   ctx.value!.strokeStyle = `rgba(0, 0, 0, 1.0)`
@@ -165,19 +216,14 @@ function draw(state: SimulationState) {
     datasetBoxTl.x,
     datasetBoxTl.y,
     0.11 * world.w,
-    (state.trainDataset.length * 0.1 + 0.02) * world.h,
+    (state.trainDataset.length * (0.1 + state.trainDatasetPadding) + state.trainDatasetPadding) * world.h,
     6
   )
   ctx.value!.stroke()
-  // ctx.value!.strokeRect(
-  //   datasetBoxTl.x,
-  //   datasetBoxTl.y,
-  //   0.11 * world.w,
-  //   (state.trainDataset.length * 0.1 + 0.02) * world.h
-  // )
 
   ctx.value!.fillStyle = `rgba(0, 0, 0, 1.0)`
-  ctx.value!.fillText("Dataset", datasetBoxTl.x, datasetBoxTl.y - 0.01 * world.h)
+  ctx.value!.font = '12px myFont'
+  ctx.value!.fillText("Dataset", datasetBoxTl.x, datasetBoxTl.y - state.trainDatasetPadding * world.h)
 
   for (const te of state.trainDataset) {
     // Outer box
@@ -224,8 +270,20 @@ function draw(state: SimulationState) {
       6
     )
     ctx.value!.stroke()
-    ctx.value!.font = '8px sans-serif'
-    ctx.value!.fillText("Caption", cap_wp.x + 0.005*world.w, cap_wp.y + 0.03 * world.h)
+    ctx.value!.font = '8px myFont'
+    ctx.value!.fillText("Caption", cap_wp.x + 0.0025*world.w, cap_wp.y + 0.03 * world.h)
+  }
+
+  for (const de of state.datasetEmbeddings) {
+    console.log(de.type, de.type == "image")
+    const c = de.type == "image" ? "34, 139, 230" : "255, 146, 43"
+    ctx.value!.strokeStyle = `rgba(${c}, ${de.o})`
+    ctx.value!.fillStyle = `rgba(${c}, ${de.o})`
+    let start_p = geo.toWorldAbsolute(de.start, world)
+    let end_p = geo.toWorldAbsolute(de.end, world)
+    let curr_p = geo.lerpObj(start_p, end_p, de.prog)
+    ctx.value!.fillRect(start_p.x, start_p.y, 0.01*world.w, 0.01*world.h)
+    ctx.value!.fillRect(curr_p.x, curr_p.y, 0.01*world.w, 0.01*world.h)
   }
 
   ctx.value!.strokeStyle = `rgba(0, 0, 0, 1.0)`

@@ -64,6 +64,9 @@ export function lerpObj<T>(oA: T, oB: T, p: number): T {
         if (Array.isArray(value)) {
             oC[key] = value.map((el, i) => { return lerpObj(oA[key][i], el, p) })
         }
+        else if (typeof value === 'string') {
+            oC[key] = oB[key]
+        }
         else if (typeof value === 'object') {
             oC[key] = lerpObj(oA[key], oB[key], p)
         } else {
