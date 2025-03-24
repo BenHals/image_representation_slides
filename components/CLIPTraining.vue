@@ -3,48 +3,22 @@
 import { ref, onMounted, shallowRef } from 'vue'
 
 interface trainexample {
-  im_x: number
-  im_y: number
-  text_x: number
-  text_y: number
+  im_x: number,
+  im_y: number,
+  text_x: number,
+  text_y: number,
   opacity: number
 }
 
-interface simstate {
+interface simState {
   examples: trainexample[]
-}
-
-const customCanvas = shallowRef<HTMLCanvasElement | null>(null)
-const ctx = shallowRef<CanvasRenderingContext2D | null>(null)
-const progSlider = ref<HTMLInputElement | null>(null)
-const prog = ref(0.0)
-const isPlaying = ref(false)
-const aniStartTime = ref(null)
-
-const ani = {
-  totalDuration: 3.0,
-  stages: [...Array(3).keys()].map((s) => {
-    return {
-      "examples": [...Array(5).keys()].map((i) => {
-        return {
-          im_x: 0.1,
-          im_y: 0.1 * i,
-          text_x: 0.2,
-          text_y: 0.1 * i,
-          opacity: i <= s ? 1 : 0,
-        }
-      }),
-
-    }
-  }
-  )
 }
 
 console.log(ani)
 
 
-onMounted(() => {
-  ctx.value = customCanvas.value!.getContext('2d')
+onMoun ted(() => {
+  ct x.value = customCanvas.value!.getContext('2d')
   draw(sim(prog.value))
 })
 

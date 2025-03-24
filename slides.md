@@ -184,7 +184,7 @@ layoutClass: gap-16
 
 # CLIP Training
 
-<CLIPTraining />
+<CLIPTraining2 />
 
 
 
