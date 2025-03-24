@@ -57,3 +57,18 @@ export function worldToViewport(p: WorldPoint, w: World, v: Viewport): ViewportP
 export function viewportScaling(v: Viewport): number {
     return v.sharpness / v.s
 }
+
+export function lerpObj<T>(oA: T, oB: T, p: number): T {
+    let oC = {}
+    for (const [key, value] of Object.entries(oB)) {
+        if (Array.isArray(value)) {
+            oC[key] = value.map((el, i) => { return lerpObj(oA[key][i], el, p) })
+        }
+        else if (typeof value === 'object') {
+            oC[key] = lerpObj(oA[key], oB[key], p)
+        } else {
+            oC[key] = (1 - p) * oA[key] + p * oB[key]
+        }
+    }
+    return oC
+}

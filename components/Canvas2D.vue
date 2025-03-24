@@ -43,10 +43,10 @@ let world = {
 }
 
 let viewport = {
-  tl: {x: -50.0, y: -50.0},
+  tl: {x: 0.0, y: 0.0},
   w: 0.0,
   h: 0.0,
-  s: 2.0,
+  s: 1.0,
   sharpness: 2.0
 }
 
@@ -73,8 +73,8 @@ function handleResize() {
 onMounted(() => {
   handleResize()
   ctx.value = customCanvas.value!.getContext('2d')
-  customCanvas.value!.onmousedown = (e) => {handleDrag = true}
-  customCanvas.value!.onmouseup = (e) => {handleDrag = false}
+  customCanvas.value!.onmousedown = () => {handleDrag = true}
+  customCanvas.value!.onmouseup = () => {handleDrag = false}
   customCanvas.value!.onmousemove = (e: MouseEvent) => {
     if (!handleDrag) return;
     viewport.tl.x += -e.movementX * 1/geo.viewportScaling(viewport);
@@ -82,20 +82,16 @@ onMounted(() => {
     draw(sim(prog.value));
   }
 
-  customCanvas.value!.onwheel = (e) => {viewport.s += e.deltaY * 0.001; draw(sim(prog.value)); console.log(viewport.s)}
+  customCanvas.value!.onwheel = (e) => {viewport.s += e.deltaY * 0.001; draw(sim(prog.value))}
   draw(sim(prog.value))
 })
 
 function sim(p: number): SimulationState {
   let prev_ani_stages = ani.stages.filter((s) => s.ep <= p)
   let next_ani_stages = ani.stages.filter((s) => s.ep >= p)
-  console.log(prev_ani_stages)
-  console.log(next_ani_stages)
   let curr_stage = next_ani_stages[0]
   let prev_stage = prev_ani_stages[prev_ani_stages.length - 1]
 
-  console.log(curr_stage)
-  console.log(prev_stage)
   let stage_p = (curr_stage.ep - curr_stage.sp) > 0 ? (p - curr_stage.sp) / (curr_stage.ep - curr_stage.sp) : curr_stage.ep
 
   let rect_world_prop_pos = {
@@ -161,8 +157,6 @@ function inc(time: number) {
   }
 
 }
-
-console.log('test')
 
 </script>
 
