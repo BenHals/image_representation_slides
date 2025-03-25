@@ -273,14 +273,39 @@ img {
 ---
 ---
 
-# CLIP Training
+# CLIP Downsides
 
-<SegmentSlider :segments="[
-    {name: 'test', length: 0.2, idx: 1},
-    {name: 'test2', length: 0.2, idx: 2},
-    {name: 'test3', length: 0.6, idx: 3},
-  ]" :prog="0.0"/>
+- What image features are represented in the embedding?
+- Are embeddings dense / localized?
+- Are embeddings spatially aware?
+- How does changing the text style/content change in the text embedding?
+<br>
+<span v-mark.underline.red><span v-click=1>_What changes map to the same caption/embedding?_</span></span>
 
+---
+layout: two-cols-header
+layoutClass: gap-16
+---
+
+# Dense Representation
+
+::left::
+
+<p text="green">Information Dense</p>
+<p text="lime">Similar images are close together</p>
+<p text="yellow">Images are close to relevant text</p>
+<div v-mark.box.red=1>
+<p text="orange">Representations are localized</p>
+</div>
+<p text="red">Representations are spatially aware</p>
+
+::right::
+<br> <br> <br> <br>
+<p v-click=1>DINO!</p>
+
+---
+
+# DINO
 
 ---
 
