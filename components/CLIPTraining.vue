@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { ref, onMounted, shallowRef } from 'vue'
+import rough from 'roughjs'
 import * as geo from './geo.ts'
 
 
@@ -19,7 +20,8 @@ interface DatasetEmbedding{
 interface SimulationState {
   trainDatasetPadding: number,
   trainDataset: TrainExampleDS[],
-  datasetEmbeddings: DatasetEmbedding[]
+  datasetEmbeddings: DatasetEmbedding[],
+  embeddedExamples: DatasetEmbedding[],
 }
 
 
@@ -27,20 +29,14 @@ function createAnimation(): geo.Animation<SimulationState> {
   const n_train_examples = 5
   const padding = 0.01
   let stages: geo.AnimationStage<SimulationState>[] = []
-  let curr_state = {
-    trainDatasetPadding: padding,
-    trainDataset: [...Array(n_train_examples).keys()].map((i) => {
-      return {
-        o: 0.0,
-        tl: { x: 0.01, y: (0.1 + padding) * (i + 1) }
-      }
-    }),
-    datasetEmbeddings: [
+  let stageSets: geo.AnimationStageSet[] = []
+
+  let datasetEmbeddings = [
       ...[...Array(n_train_examples).keys()].map((i) => {
       return {
         o: 0.0,
         start: { x: 0.11, y: (0.1 + padding) * (i + 1) + 0.1/2 },
-        end: { x: 0.21, y: (0.1 + padding) * (i + 1) + 0.1/2 },
+        end: { x: 0.2 + (Math.random() * 0.6), y: padding + (Math.random() - padding*2) },
         prog: 0.0,
         type: "image"
       }
@@ -49,8 +45,37 @@ function createAnimation(): geo.Animation<SimulationState> {
       return {
         o: 0.0,
         start: { x: 0.11, y: (0.1 + padding) * (i + 1) + 0.1/2 },
-        end: { x: 0.21, y: (0.1 + padding) * (i + 1) + 0.1 },
+        end: { x: 0.2 + (Math.random() * 0.6), y: padding + (Math.random() - padding*2) },
         prog: 0.0,
+        type: "caption"
+      }
+    })
+    ]
+  let curr_state = {
+    trainDatasetPadding: padding,
+    trainDataset: [...Array(n_train_examples).keys()].map((i) => {
+      return {
+        o: 0.0,
+        tl: { x: 0.01, y: (0.1 + padding) * (i + 1) }
+      }
+    }),
+    datasetEmbeddings: datasetEmbeddings,
+    embeddedExamples: [
+      ...[...Array(n_train_examples).keys()].map((i) => {
+      return {
+        o: 0.0,
+        start: {x: datasetEmbeddings[i].start.x, y: datasetEmbeddings[i].start.y},
+        end: {x: datasetEmbeddings[i].end.x, y: datasetEmbeddings[i].end.y},
+        prog: 1.0,
+        type: "image"
+      }
+    }), 
+    ...[...Array(n_train_examples).keys()].map((i) => {
+      return {
+        o: 0.0,
+        start: {x: datasetEmbeddings[i+n_train_examples].start.x, y: datasetEmbeddings[i+n_train_examples].start.y},
+        end: {x: datasetEmbeddings[i+n_train_examples].end.x, y: datasetEmbeddings[i+n_train_examples].end.y},
+        prog: 1.0,
         type: "caption"
       }
     })
@@ -63,22 +88,32 @@ function createAnimation(): geo.Animation<SimulationState> {
   stages.push({ state: { ...curr_state }, sp: prev_p, ep: curr_p })
   curr_state = structuredClone(curr_state)
 
+  // StageSet 1: Make Dataset
+  let currStageSet = {
+    name: "Create Dataset",
+    length: 0.2
+  }
+  stageSets.push(structuredClone(currStageSet))
   for (const i in [...Array(n_train_examples).keys()]) {
     prev_p = curr_p
-    curr_p = Math.min(1.0, curr_p + 0.1)
+    curr_p = Math.min(1.0, curr_p + (currStageSet.length / n_train_examples))
 
     console.log(curr_state)
     curr_state.trainDataset[i].o = 1.0
     stages.push({ state: curr_state, sp: prev_p, ep: curr_p })
     curr_state = structuredClone(curr_state)
   }
-  for (let i in [...Array(n_train_examples).keys()]) {
-    prev_p = curr_p
-    curr_p = Math.min(1.0, curr_p + 0.1)
 
-    i = parseInt(i)
-    console.log(curr_state)
-    console.log(curr_state.datasetEmbeddings.length, i, i+n_train_examples)
+  // StageSet 2: Embed
+  currStageSet = {
+    name: "Embed Examples",
+    length: 0.2,
+  }
+  stageSets.push(currStageSet)
+  for (let i of [...Array(n_train_examples).keys()]) {
+    prev_p = curr_p
+    curr_p = Math.min(1.0, curr_p + ((currStageSet.length - 0.05) / n_train_examples))
+
     curr_state.datasetEmbeddings[i].o = 1.0
     curr_state.datasetEmbeddings[i].prog = 1.0
     curr_state.datasetEmbeddings[i+n_train_examples].o = 1.0
@@ -87,11 +122,23 @@ function createAnimation(): geo.Animation<SimulationState> {
     curr_state = structuredClone(curr_state)
   }
 
+  for (let i of [...Array(n_train_examples).keys()]) {
+    prev_p = curr_p
+    curr_p = curr_p + 0.05
+
+    curr_state.datasetEmbeddings[i].o = 0.0
+    curr_state.datasetEmbeddings[i+n_train_examples].o = 0.0
+    curr_state.embeddedExamples[i].o = 1.0
+    curr_state.embeddedExamples[i+n_train_examples].o = 1.0
+  }
+  stages.push({ state: curr_state, sp: prev_p, ep: curr_p })
+
   stages.push({ state: { ...stages[stages.length - 1].state }, sp: 1.0, ep: 1.0 })
 
   return {
     totalDuration: 3.0,
-    stages: stages
+    stages: stages,
+    stageSets: stageSets
   }
 
 }
@@ -199,6 +246,7 @@ function draw(state: SimulationState) {
   handleResize()
   console.log(ctx.value)
   console.log(world, viewport)
+  let roughCanvas = rough.canvas(customCanvas.value!);
   let world_vp = geo.worldToViewport(world.tl, world, viewport)
   ctx.value!.resetTransform()
   ctx.value?.clearRect(0.0, 0.0, viewport.w, viewport.h)
@@ -275,16 +323,27 @@ function draw(state: SimulationState) {
   }
 
   for (const de of state.datasetEmbeddings) {
-    console.log(de.type, de.type == "image")
     const c = de.type == "image" ? "34, 139, 230" : "255, 146, 43"
     ctx.value!.strokeStyle = `rgba(${c}, ${de.o})`
     ctx.value!.fillStyle = `rgba(${c}, ${de.o})`
     let start_p = geo.toWorldAbsolute(de.start, world)
     let end_p = geo.toWorldAbsolute(de.end, world)
     let curr_p = geo.lerpObj(start_p, end_p, de.prog)
-    ctx.value!.fillRect(start_p.x, start_p.y, 0.01*world.w, 0.01*world.h)
-    ctx.value!.fillRect(curr_p.x, curr_p.y, 0.01*world.w, 0.01*world.h)
+    roughCanvas.circle(curr_p.x, curr_p.y, 0.025*world.w, { stroke: ctx.value!.strokeStyle, roughness: 0.5})
+    roughCanvas.line(start_p.x, start_p.y, curr_p.x, curr_p.y, { stroke: ctx.value!.strokeStyle, roughness: 0.5})
+
   }
+
+  for (const de of state.embeddedExamples) {
+    const c = de.type == "image" ? "34, 139, 230" : "255, 146, 43"
+    ctx.value!.strokeStyle = `rgba(${c}, ${de.o})`
+    ctx.value!.fillStyle = `rgba(${c}, ${de.o})`
+    let start_p = geo.toWorldAbsolute(de.start, world)
+    let end_p = geo.toWorldAbsolute(de.end, world)
+    let curr_p = geo.lerpObj(start_p, end_p, de.prog)
+    roughCanvas.circle(curr_p.x, curr_p.y, 0.025*world.w, { stroke: ctx.value!.strokeStyle, fill: ctx.value!.fillStyle, roughness: 0.5})
+  }
+
 
   ctx.value!.strokeStyle = `rgba(0, 0, 0, 1.0)`
   ctx.value!.strokeRect(world.tl.x, world.tl.y, world.w, world.h)

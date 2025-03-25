@@ -4,9 +4,15 @@ export interface AnimationStage<S> {
     ep: number
 }
 
+export interface AnimationStageSet {
+    name: string,
+    length: number
+}
+
 export interface Animation<S> {
     totalDuration: number,
     stages: AnimationStage<S>[]
+    stageSets: AnimationStageSet[]
 }
 
 interface Point {
