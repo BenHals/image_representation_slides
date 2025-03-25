@@ -5,10 +5,10 @@ const props = defineProps({
   segments: {
     default: [],
   },
+  prog: Number
 })
 console.log(props)
 
-const prog = ref(0.0)
 const slider = ref<HTMLInputElement | null>(null)
 const sliderMask = ref<HTMLDivElement | null>(null)
 const emit = defineEmits(['prog-update'])
@@ -30,9 +30,8 @@ function getColor(i: number) {
 }
 
 function input() {
-  prog.value = slider.value!.value
-  sliderMask.value!.style = `left: ${prog.value}%; width: ${100 - prog.value}%`
-  emit('prog-update', prog.value)
+  let v = parseFloat(slider.value!.value)
+  emit('prog-update', v)
 }
 
 </script>
@@ -49,8 +48,8 @@ function input() {
       </template>
     </div>
     <div class="sliderContainer" style="position: relative; top: -30px">
-      <div ref="sliderMask" class="slider-mask"></div>
-      <input ref="slider" type="range" id="slider" min="1" max="100" :value="prog" style="width: 100%" @input="input"/>
+      <div ref="sliderMask" class="slider-mask" :style="`left: ${props.prog*100}%; width: ${(1 - props.prog)*100}%`"></div>
+      <input ref="slider" type="range" id="slider" min="0" max="1.0" step="0.01" :value="props.prog" style="width: 100%" @input="input"/>
     </div>
   </div>
 </template>

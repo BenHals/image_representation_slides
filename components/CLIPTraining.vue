@@ -435,10 +435,10 @@ function drawDatasetExample(te: TrainExampleDS) {
 }
 
 function move(v: number) {
-  prog.value = v / 100
+  prog.value = v
   prog.value = Math.min(prog.value, 1.0)
+  console.log(v)
   draw(sim(prog.value), layout)
-
 }
 
 function start() {
@@ -488,7 +488,7 @@ function inc(time: number) {
         <button v-else @click="start">Start</button>
       </div>
       <div style="width: 75%">
-        <SegmentSlider :segments="stageSets" @prog-update="move"/>
+        <SegmentSlider :segments="stageSets" :prog="prog" @prog-update="move"/>
       </div>
     </div>
   </div>
