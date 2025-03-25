@@ -242,6 +242,8 @@ const layout: Layout = {
   n_train_examples: 5
 }
 
+let mousePos: geo.ViewportPoint = {x: 0.0, y: 0.0}
+
 const customCanvas = shallowRef<HTMLCanvasElement | null>(null)
 const ctx = shallowRef<CanvasRenderingContext2D | null>(null)
 const prog = ref(0.0)
@@ -270,15 +272,17 @@ onMounted(() => {
   customCanvas.value!.onmousedown = () => { handleDrag = true }
   customCanvas.value!.onmouseup = () => { handleDrag = false }
   customCanvas.value!.onmousemove = (e: MouseEvent) => {
-    if (!handleDrag) return;
+    mousePos = {x: e.offsetX * viewport.sharpness, y: e.offsetY * viewport.sharpness}
+    console.log(mousePos)
+    if (handleDrag) {
 
-    const bb = customCanvas.value!.getBoundingClientRect();
+      const bb = customCanvas.value!.getBoundingClientRect();
+      const propMovementX = (e.movementX / bb.width) * customCanvas.value!.width
+      const propMovementY = (e.movementY / bb.height) * customCanvas.value!.height
 
-    const propMovementX = (e.movementX / bb.width) * customCanvas.value!.width
-    const propMovementY = (e.movementY / bb.height) * customCanvas.value!.height
-
-    viewport.tl.x += -propMovementX * 1 / geo.viewportScaling(viewport);
-    viewport.tl.y += -propMovementY * 1 / geo.viewportScaling(viewport);
+      viewport.tl.x += -propMovementX * 1 / geo.viewportScaling(viewport);
+      viewport.tl.y += -propMovementY * 1 / geo.viewportScaling(viewport);
+    }
     draw(sim(prog.value), layout);
   }
 
@@ -321,6 +325,9 @@ function draw(state: SimulationState, layout: Layout) {
   ctx.value?.clearRect(0.0, 0.0, viewport.w, viewport.h)
   ctx.value!.setTransform(geo.viewportScaling(viewport), 0, 0, geo.viewportScaling(viewport), world_vp.x, world_vp.y)
 
+  let worldMousePos = geo.viewportToWorld(mousePos, world, viewport)
+  // ctx.value?.fillRect(worldMousePos.x - 25, worldMousePos.y - 25, 50, 50)
+
   // draw Dataset
   ctx.value!.strokeStyle = `rgba(0, 0, 0, 1.0)`
   ctx.value!.lineWidth = 2
@@ -360,14 +367,34 @@ function draw(state: SimulationState, layout: Layout) {
 
   }
 
-  for (const de of state.embeddedExamples) {
-    const c = de.type == "image" ? "34, 139, 230" : "255, 146, 43"
-    ctx.value!.strokeStyle = `rgba(${c}, ${de.o})`
-    ctx.value!.fillStyle = `rgba(${c}, ${de.o})`
+  for (const [i, de] of state.embeddedExamples.entries()) {
     let start_p = geo.toWorldAbsolute(de.start, world)
     let end_p = geo.toWorldAbsolute(de.end, world)
     let curr_p = geo.lerpObj(start_p, end_p, de.prog)
-    roughCanvas.circle(curr_p.x, curr_p.y, 0.025 * world.w, { stroke: ctx.value!.strokeStyle, fill: ctx.value!.fillStyle, roughness: 0.5 })
+
+
+    let mouseDist = Math.sqrt(Math.pow(worldMousePos.x - curr_p.x, 2) + Math.pow(worldMousePos.y - curr_p.y, 2))
+    let d = 0.025 * world.w
+    const selected = (mouseDist <= d/2) 
+
+    let c = de.type == "image" ? "34, 139, 230" : "255, 146, 43"
+    ctx.value!.strokeStyle = `rgba(${c}, ${de.o})`
+    ctx.value!.fillStyle = `rgba(${c}, ${de.o})`
+
+    let strokeWidth = selected ? 2 : 1
+    roughCanvas.circle(curr_p.x, curr_p.y, d, { stroke: ctx.value!.strokeStyle, fill: ctx.value!.fillStyle, roughness: 0.5, strokeWidth: strokeWidth})
+    if (selected) {
+      let matchIdx = de.type == "image" ? i+layout.n_train_examples : i - layout.n_train_examples
+      let captionEl = state.embeddedExamples[matchIdx]
+      let cap_start_p = geo.toWorldAbsolute(captionEl.start, world)
+      let cap_end_p = geo.toWorldAbsolute(captionEl.end, world)
+      let cap_curr_p = geo.lerpObj(cap_start_p, cap_end_p, de.prog)
+
+      ctx.value!.strokeStyle = `rgba(47, 158, 68, ${de.o})`
+      ctx.value!.setLineDash([5])
+      roughCanvas.line(curr_p.x, curr_p.y, cap_curr_p.x, cap_curr_p.y, {stroke: ctx.value!.strokeStyle, roughness: 0.5})
+      ctx.value!.setLineDash([])
+    }
   }
 }
 

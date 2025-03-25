@@ -77,6 +77,14 @@ export function worldToViewport(p: WorldPoint, w: World, v: Viewport): ViewportP
     }
 }
 
+export function viewportToWorld(p: ViewportPoint, w: World, v: Viewport): WorldPoint {
+    let offset = { x: w.tl.x - v.tl.x, y: w.tl.y - v.tl.y }
+    return {
+        x: (p.x / viewportScaling(v)) - offset.x,
+        y: (p.y / viewportScaling(v)) - offset.y
+    }
+}
+
 /**
 * Gets a scaling constant to handle viewport scale vs sharpness (number of pixels per 'pixel')
 */
