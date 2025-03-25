@@ -20,9 +20,28 @@ interface Point {
     y: number
 }
 
+
 export interface WorldPoint extends Point { }
 export interface WorldPropPoint extends Point { }
 export interface ViewportPoint extends Point { }
+
+export interface WorldRect {
+    tl: WorldPoint,
+    w: number,
+    h: number
+}
+
+export interface WorldPropRect {
+    tl: WorldPropPoint,
+    w: number,
+    h: number
+}
+
+export interface ViewportRect {
+    tl: ViewportPoint,
+    w: number,
+    h: number
+}
 
 export interface World {
     tl: WorldPoint
@@ -64,8 +83,22 @@ export function viewportScaling(v: Viewport): number {
     return v.sharpness / v.s
 }
 
+export function drawRoundRectTL(tl: WorldPropPoint, w: number, h: number, world: World, ctx: CanvasRenderingContext2D) {
+    const worldTL = toWorldAbsolute({ x: tl.x, y: tl.y }, world)
+    ctx.beginPath()
+    ctx.roundRect(
+        worldTL.x,
+        worldTL.y,
+        w * world.w,
+        h * world.h,
+        6
+    )
+
+    ctx.stroke()
+}
+
 export function lerpObj<T>(oA: T, oB: T, p: number): T {
-    let oC = {}
+    let oC: T = {}
     for (const [key, value] of Object.entries(oB)) {
         if (Array.isArray(value)) {
             oC[key] = value.map((el, i) => { return lerpObj(oA[key][i], el, p) })
