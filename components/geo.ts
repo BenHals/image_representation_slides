@@ -6,7 +6,8 @@ export interface AnimationStage<S> {
 
 export interface AnimationStageSet {
     name: string,
-    length: number
+    length: number,
+    idx: number
 }
 
 export interface Animation<S> {

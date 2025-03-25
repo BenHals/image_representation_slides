@@ -270,6 +270,17 @@ img {
 <CLIPTraining />
 
 
+---
+---
+
+# CLIP Training
+
+<SegmentSlider :segments="[
+    {name: 'test', length: 0.2, idx: 1},
+    {name: 'test2', length: 0.2, idx: 2},
+    {name: 'test3', length: 0.6, idx: 3},
+  ]"/>
+
 
 ---
 

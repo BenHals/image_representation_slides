@@ -9,7 +9,7 @@ interface TrainExampleDS {
   tl: geo.WorldPropPoint,
   o: number
 }
-interface DatasetEmbedding{
+interface DatasetEmbedding {
   start: geo.WorldPropPoint,
   end: geo.WorldPropPoint,
   type: string,
@@ -33,79 +33,79 @@ interface SimulationState {
 }
 
 
-function createAnimation(layout: Layout): geo.Animation<SimulationState> {
+function createAnimation(layout: Layout): {ani: geo.Animation<SimulationState>, stageSets: geo.AnimationStageSet[]} {
   let stages: geo.AnimationStage<SimulationState>[] = []
   let stageSets: geo.AnimationStageSet[] = []
 
   let trainDataset = [...Array(layout.n_train_examples).keys()].map((i) => {
-      return {
-        o: 0.0,
-        tl: { 
-          x: layout.datasetPaddingLeft,
-          y: layout.datasetPaddingTop + layout.datasetHeight * i
-        }
+    return {
+      o: 0.0,
+      tl: {
+        x: layout.datasetPaddingLeft,
+        y: layout.datasetPaddingTop + layout.datasetHeight * i
       }
-    })
+    }
+  })
 
   let datasetEmbeddings = [
-      ...[...Array(layout.n_train_examples).keys()].map((i) => {
+    ...[...Array(layout.n_train_examples).keys()].map((i) => {
       return {
         o: 0.0,
-        start: { 
+        start: {
           x: layout.datasetPaddingLeft + layout.datasetWidth,
-          y: layout.datasetPaddingTop + layout.datasetHeight * i + layout.datasetHeight/2 
+          y: layout.datasetPaddingTop + layout.datasetHeight * i + layout.datasetHeight / 2
         },
         end: {
           x: 0.2 + (Math.random() * 0.6),
-          y: layout.datasetInnerMargin + (Math.random() - layout.datasetInnerMargin*2)
+          y: layout.datasetInnerMargin + (Math.random() - layout.datasetInnerMargin * 2)
         },
         prog: 0.0,
         type: "image"
       }
-    }), 
+    }),
     ...[...Array(layout.n_train_examples).keys()].map((i) => {
       return {
         o: 0.0,
-        start: { 
+        start: {
           x: layout.datasetPaddingLeft + layout.datasetWidth,
-          y: layout.datasetPaddingTop + layout.datasetHeight * i + layout.datasetHeight/2 
+          y: layout.datasetPaddingTop + layout.datasetHeight * i + layout.datasetHeight / 2
         },
         end: {
           x: 0.2 + (Math.random() * 0.6),
-          y: layout.datasetInnerMargin + (Math.random() - layout.datasetInnerMargin*2)
+          y: layout.datasetInnerMargin + (Math.random() - layout.datasetInnerMargin * 2)
         },
         prog: 0.0,
         type: "caption"
       }
     })
-    ]
+  ]
 
   let embeddedExamples = [
-      ...[...Array(layout.n_train_examples).keys()].map((i) => {
-      return {
-        o: 0.0,
-        start: {x: datasetEmbeddings[i].start.x, y: datasetEmbeddings[i].start.y},
-        end: {x: datasetEmbeddings[i].end.x, y: datasetEmbeddings[i].end.y},
-        prog: 1.0,
-        type: "image"
-      }
-    }), 
     ...[...Array(layout.n_train_examples).keys()].map((i) => {
       return {
         o: 0.0,
-        start: {x: datasetEmbeddings[i+layout.n_train_examples].start.x, y: datasetEmbeddings[i+layout.n_train_examples].start.y},
-        end: {x: datasetEmbeddings[i+layout.n_train_examples].end.x, y: datasetEmbeddings[i+layout.n_train_examples].end.y},
+        start: { x: datasetEmbeddings[i].start.x, y: datasetEmbeddings[i].start.y },
+        end: { x: datasetEmbeddings[i].end.x, y: datasetEmbeddings[i].end.y },
+        prog: 1.0,
+        type: "image"
+      }
+    }),
+    ...[...Array(layout.n_train_examples).keys()].map((i) => {
+      return {
+        o: 0.0,
+        start: { x: datasetEmbeddings[i + layout.n_train_examples].start.x, y: datasetEmbeddings[i + layout.n_train_examples].start.y },
+        end: { x: datasetEmbeddings[i + layout.n_train_examples].end.x, y: datasetEmbeddings[i + layout.n_train_examples].end.y },
         prog: 1.0,
         type: "caption"
       }
     })
-    ]
+  ]
 
 
   let curr_state = {
     trainDataset: trainDataset,
     datasetEmbeddings: datasetEmbeddings,
-    embeddedExamples:   embeddedExamples
+    embeddedExamples: embeddedExamples
   }
 
   let prev_p = 0.0
@@ -117,7 +117,8 @@ function createAnimation(layout: Layout): geo.Animation<SimulationState> {
   // StageSet 1: Make Dataset
   let currStageSet = {
     name: "Create Dataset",
-    length: 0.2
+    length: 0.2,
+    idx: 0.0
   }
   stageSets.push(structuredClone(currStageSet))
   for (const i in [...Array(layout.n_train_examples).keys()]) {
@@ -133,6 +134,7 @@ function createAnimation(layout: Layout): geo.Animation<SimulationState> {
   currStageSet = {
     name: "Embed Examples",
     length: 0.2,
+    idx: 1,
   }
   stageSets.push(currStageSet)
   for (let i of [...Array(layout.n_train_examples).keys()]) {
@@ -141,8 +143,8 @@ function createAnimation(layout: Layout): geo.Animation<SimulationState> {
 
     curr_state.datasetEmbeddings[i].o = 1.0
     curr_state.datasetEmbeddings[i].prog = 1.0
-    curr_state.datasetEmbeddings[i+layout.n_train_examples].o = 1.0
-    curr_state.datasetEmbeddings[i+layout.n_train_examples].prog = 1.0
+    curr_state.datasetEmbeddings[i + layout.n_train_examples].o = 1.0
+    curr_state.datasetEmbeddings[i + layout.n_train_examples].prog = 1.0
     stages.push({ state: curr_state, sp: prev_p, ep: curr_p })
     curr_state = structuredClone(curr_state)
   }
@@ -152,15 +154,16 @@ function createAnimation(layout: Layout): geo.Animation<SimulationState> {
     curr_p = curr_p + 0.05
 
     curr_state.datasetEmbeddings[i].o = 0.0
-    curr_state.datasetEmbeddings[i+layout.n_train_examples].o = 0.0
+    curr_state.datasetEmbeddings[i + layout.n_train_examples].o = 0.0
     curr_state.embeddedExamples[i].o = 1.0
-    curr_state.embeddedExamples[i+layout.n_train_examples].o = 1.0
+    curr_state.embeddedExamples[i + layout.n_train_examples].o = 1.0
   }
   stages.push({ state: curr_state, sp: prev_p, ep: curr_p })
   curr_state = structuredClone(curr_state)
 
   prev_p = curr_p
   curr_p += 0.1
+  currStageSet.length = curr_p
   stages.push({ state: curr_state, sp: prev_p, ep: curr_p })
   curr_state = structuredClone(curr_state)
 
@@ -168,7 +171,10 @@ function createAnimation(layout: Layout): geo.Animation<SimulationState> {
   currStageSet = {
     name: "Train",
     length: 0.5,
+    idx: 2
   }
+  stageSets.push(currStageSet)
+
 
   let n_train_steps = 20
   for (const _ of [...Array(n_train_steps).keys()]) {
@@ -177,12 +183,12 @@ function createAnimation(layout: Layout): geo.Animation<SimulationState> {
     curr_p = trainEnd
 
     for (const i of [...Array(layout.n_train_examples).keys()]) {
-      let stepVec = {x: 0.0, y: 0.0}
+      let stepVec = { x: 0.0, y: 0.0 }
       let imgVec = curr_state.embeddedExamples[i]
       for (const j of [...Array(layout.n_train_examples).keys()]) {
         let match = i == j
         let captionVec = curr_state.embeddedExamples[j + layout.n_train_examples]
-        let pushVec = { x: imgVec.end.x - captionVec.end.x, y: imgVec.end.y - captionVec.end.y}
+        let pushVec = { x: imgVec.end.x - captionVec.end.x, y: imgVec.end.y - captionVec.end.y }
         let dist = Math.sqrt(Math.pow(pushVec.x, 2) + Math.pow(pushVec.y, 2)) * 100
         let pushStr = match ? (0.01 * Math.pow(dist, 0.75)) : (-0.1 * Math.pow(dist, -0.6))
         stepVec.x -= pushVec.x * pushStr
@@ -203,8 +209,11 @@ function createAnimation(layout: Layout): geo.Animation<SimulationState> {
   stages.push({ state: { ...stages[stages.length - 1].state }, sp: 1.0, ep: 1.0 })
 
   return {
-    totalDuration: 3.0,
-    stages: stages,
+    ani: {
+      totalDuration: 3.0,
+      stages: stages,
+      stageSets: stageSets
+    },
     stageSets: stageSets
   }
 
@@ -228,20 +237,19 @@ const layout: Layout = {
   datasetPaddingTop: 0.1,
   datasetPaddingLeft: 0.01,
   datasetInnerMargin: 0.01,
-  datasetWidth: 0.1,
+  datasetWidth: 0.13,
   datasetHeight: 0.1,
   n_train_examples: 5
 }
 
 const customCanvas = shallowRef<HTMLCanvasElement | null>(null)
 const ctx = shallowRef<CanvasRenderingContext2D | null>(null)
-const progSlider = ref<HTMLInputElement | null>(null)
 const prog = ref(0.0)
 const isPlaying = ref(false)
 const aniStartTime = ref<number | null>(null)
 let handleDrag = false
 
-const ani = createAnimation(layout)
+const {ani, stageSets} = createAnimation(layout)
 
 function handleResize() {
   customCanvas.value!.width = customCanvas.value!.clientWidth * viewport.sharpness
@@ -255,7 +263,7 @@ function handleResize() {
 onMounted(() => {
   handleResize()
   var myFont = new FontFace('myFont', 'url(public/Excalifont-Regular.woff2)');
-  myFont.load().then(function(font){
+  myFont.load().then(function (font) {
     document.fonts.add(font);
   });
   ctx.value = customCanvas.value!.getContext('2d')
@@ -316,75 +324,28 @@ function draw(state: SimulationState, layout: Layout) {
   // draw Dataset
   ctx.value!.strokeStyle = `rgba(0, 0, 0, 1.0)`
   ctx.value!.lineWidth = 2
-  // const datasetBoxTl = geo.toWorldAbsolute({ x: 0.005, y: 0.1 }, world)
-  // ctx.value!.beginPath()
-  // ctx.value!.roundRect(
-  //   datasetBoxTl.x,
-  //   datasetBoxTl.y,
-  //   0.11 * world.w,
-  //   (state.trainDataset.length * (0.1 + state.trainDatasetPadding) + state.trainDatasetPadding) * world.h,
-  //   6
-  // )
-  // ctx.value!.stroke()
   geo.drawRoundRectTL(
-    {x: layout.datasetPaddingLeft, y: layout.datasetPaddingTop},
+    { x: layout.datasetPaddingLeft, y: layout.datasetPaddingTop },
     layout.datasetWidth,
-    layout.datasetHeight,
+    layout.datasetHeight * layout.n_train_examples + layout.datasetInnerMargin,
     world,
     ctx.value!
   )
 
   ctx.value!.fillStyle = `rgba(0, 0, 0, 1.0)`
   ctx.value!.font = '12px myFont'
+  const datasetTextPos = geo.toWorldAbsolute({
+    x: layout.datasetPaddingLeft + layout.datasetInnerMargin,
+    y: layout.datasetPaddingTop - layout.datasetInnerMargin
+  }, world)
   ctx.value!.fillText(
     "Dataset",
-    layout.datasetPaddingLeft,
-    layout.datasetPaddingTop - layout.datasetInnerMargin * world.h
+    datasetTextPos.x,
+    datasetTextPos.y
   )
 
   for (const te of state.trainDataset) {
-    let rect_wp = geo.toWorldAbsolute(te.tl, world)
-    ctx.value!.strokeStyle = `rgba(0, 0, 0, ${te.o})`
-
-    ctx.value!.beginPath()
-    ctx.value!.roundRect(
-      rect_wp.x,
-      rect_wp.y,
-      0.1 * world.w,
-      0.1 * world.h,
-      6
-    )
-    ctx.value!.stroke()
-
-    // Img icon
-    ctx.value!.strokeStyle = `rgba(34, 139, 230, ${te.o})`
-    let im_wp = geo.toWorldAbsolute({ x: te.tl.x + 0.01, y: te.tl.y + 0.01 }, world)
-
-    ctx.value!.beginPath()
-    ctx.value!.roundRect(
-      im_wp.x,
-      im_wp.y,
-      0.03 * world.w,
-      0.08 * world.h,
-      6
-    )
-    ctx.value!.stroke()
-
-    // Caption Icon
-    ctx.value!.strokeStyle = `rgba(255, 146, 43, ${te.o})`
-    ctx.value!.fillStyle = `rgba(255, 146, 43, ${te.o})`
-    let cap_wp = geo.toWorldAbsolute({ x: te.tl.x + 0.05, y: te.tl.y + 0.03 }, world)
-    ctx.value!.beginPath()
-    ctx.value!.roundRect(
-      cap_wp.x,
-      cap_wp.y,
-      0.04 * world.w,
-      0.04 * world.h,
-      6
-    )
-    ctx.value!.stroke()
-    ctx.value!.font = '8px myFont'
-    ctx.value!.fillText("Caption", cap_wp.x + 0.0025*world.w, cap_wp.y + 0.03 * world.h)
+    drawDatasetExample(te)
   }
 
   for (const de of state.datasetEmbeddings) {
@@ -394,8 +355,8 @@ function draw(state: SimulationState, layout: Layout) {
     let start_p = geo.toWorldAbsolute(de.start, world)
     let end_p = geo.toWorldAbsolute(de.end, world)
     let curr_p = geo.lerpObj(start_p, end_p, de.prog)
-    roughCanvas.circle(curr_p.x, curr_p.y, 0.025*world.w, { stroke: ctx.value!.strokeStyle, roughness: 0.5})
-    roughCanvas.line(start_p.x, start_p.y, curr_p.x, curr_p.y, { stroke: ctx.value!.strokeStyle, roughness: 0.5})
+    roughCanvas.circle(curr_p.x, curr_p.y, 0.025 * world.w, { stroke: ctx.value!.strokeStyle, roughness: 0.5 })
+    roughCanvas.line(start_p.x, start_p.y, curr_p.x, curr_p.y, { stroke: ctx.value!.strokeStyle, roughness: 0.5 })
 
   }
 
@@ -406,12 +367,75 @@ function draw(state: SimulationState, layout: Layout) {
     let start_p = geo.toWorldAbsolute(de.start, world)
     let end_p = geo.toWorldAbsolute(de.end, world)
     let curr_p = geo.lerpObj(start_p, end_p, de.prog)
-    roughCanvas.circle(curr_p.x, curr_p.y, 0.025*world.w, { stroke: ctx.value!.strokeStyle, fill: ctx.value!.fillStyle, roughness: 0.5})
+    roughCanvas.circle(curr_p.x, curr_p.y, 0.025 * world.w, { stroke: ctx.value!.strokeStyle, fill: ctx.value!.fillStyle, roughness: 0.5 })
   }
 }
 
-function move() {
-  prog.value = parseFloat(progSlider.value!.value)
+function drawDatasetExample(te: TrainExampleDS) {
+  ctx.value!.strokeStyle = `rgba(0, 0, 0, ${te.o})`
+  const dsExampleRect = {
+    tl: {
+      x: te.tl.x + layout.datasetInnerMargin,
+      y: te.tl.y + layout.datasetInnerMargin
+    },
+    w: layout.datasetWidth - layout.datasetInnerMargin * 2,
+    h: layout.datasetHeight - layout.datasetInnerMargin,
+  }
+
+  geo.drawRoundRectTL(
+    dsExampleRect.tl,
+    dsExampleRect.w,
+    dsExampleRect.h,
+    world,
+    ctx.value!
+  )
+
+  // Img icon
+  ctx.value!.strokeStyle = `rgba(34, 139, 230, ${te.o})`
+
+  const iconRect = {
+    tl: {
+      x: dsExampleRect.tl.x + layout.datasetInnerMargin,
+      y: dsExampleRect.tl.y + layout.datasetInnerMargin,
+    },
+    w: (dsExampleRect.w - layout.datasetInnerMargin * 3) * 0.3,
+    h: (dsExampleRect.h - layout.datasetInnerMargin * 2),
+  }
+  geo.drawRoundRectTL(
+    iconRect.tl,
+    iconRect.w,
+    iconRect.h,
+    world,
+    ctx.value!
+  )
+
+  // Caption Icon
+  ctx.value!.strokeStyle = `rgba(255, 146, 43, ${te.o})`
+  ctx.value!.fillStyle = `rgba(255, 146, 43, ${te.o})`
+
+  const captionRect = {
+    tl: {
+      x: iconRect.tl.x + iconRect.w + layout.datasetInnerMargin,
+      y: dsExampleRect.tl.y + layout.datasetInnerMargin + (dsExampleRect.h - layout.datasetInnerMargin * 2) * 0.3,
+    },
+    w: (dsExampleRect.w - layout.datasetInnerMargin * 3) * 0.7,
+    h: (dsExampleRect.h - layout.datasetInnerMargin * 2) * 0.4,
+  }
+  geo.drawRoundRectTL(
+    captionRect.tl,
+    captionRect.w,
+    captionRect.h,
+    world,
+    ctx.value!
+  )
+
+  ctx.value!.font = '8px myFont'
+  const captionTextTL = geo.toWorldAbsolute({ x: captionRect.tl.x + 0.0025, y: captionRect.tl.y + captionRect.h - 0.005 }, world)
+  ctx.value!.fillText("Caption", captionTextTL.x, captionTextTL.y)
+}
+
+function move(v: number) {
+  prog.value = v / 100
   prog.value = Math.min(prog.value, 1.0)
   draw(sim(prog.value), layout)
 
@@ -464,8 +488,7 @@ function inc(time: number) {
         <button v-else @click="start">Start</button>
       </div>
       <div style="width: 75%">
-        <input type="range" min=0.0 max=1.0 step=0.01 :value="prog" ref="progSlider" @input="move"
-          style="width: 100%"></input>
+        <SegmentSlider :segments="stageSets" @prog-update="move"/>
       </div>
     </div>
   </div>
