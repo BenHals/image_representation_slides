@@ -230,7 +230,7 @@ let viewport: geo.Viewport = {
   w: 0.0,
   h: 0.0,
   s: 1.0,
-  sharpness: 2.0
+  sharpness: 4.0
 }
 
 const layout: Layout = {
@@ -480,7 +480,7 @@ function inc(time: number) {
 
 <template>
   <div flex="~ col" border="~ main rounded-md" style="width: 100%; height: 400px;">
-    <canvas ref="customCanvas" id='test' @click="move" style="image-rendering: pixelated; width: 100%; height: 100%;">
+    <canvas ref="customCanvas" id='test' style="image-rendering: pixelated; width: 100%; height: 100%;">
     </canvas>
     <div flex="~ row">
       <div style="width: 20%">
