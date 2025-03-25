@@ -132,6 +132,49 @@ function createAnimation(): geo.Animation<SimulationState> {
     curr_state.embeddedExamples[i+n_train_examples].o = 1.0
   }
   stages.push({ state: curr_state, sp: prev_p, ep: curr_p })
+  curr_state = structuredClone(curr_state)
+
+  prev_p = curr_p
+  curr_p += 0.1
+  stages.push({ state: curr_state, sp: prev_p, ep: curr_p })
+  curr_state = structuredClone(curr_state)
+
+  // StageSet 3: Train
+  currStageSet = {
+    name: "Train",
+    length: 0.5,
+  }
+
+  let n_train_steps = 20
+  for (const _ of [...Array(n_train_steps).keys()]) {
+    prev_p = curr_p
+    let trainEnd = curr_p + (currStageSet.length / n_train_steps)
+    curr_p = trainEnd
+
+    for (const i of [...Array(n_train_examples).keys()]) {
+      let stepVec = {x: 0.0, y: 0.0}
+      let imgVec = curr_state.embeddedExamples[i]
+      for (const j of [...Array(n_train_examples).keys()]) {
+        let match = i == j
+        let captionVec = curr_state.embeddedExamples[j + n_train_examples]
+        let pushVec = { x: imgVec.end.x - captionVec.end.x, y: imgVec.end.y - captionVec.end.y}
+        let dist = Math.sqrt(Math.pow(pushVec.x, 2) + Math.pow(pushVec.y, 2)) * 100
+        let pushStr = match ? (0.01 * Math.pow(dist, 0.75)) : (-0.1 * Math.pow(dist, -0.6))
+        console.log(pushStr, match)
+        stepVec.x -= pushVec.x * pushStr
+        stepVec.y -= pushVec.y * pushStr
+
+        captionVec.end.x += pushVec.x * pushStr
+        captionVec.end.y += pushVec.y * pushStr
+      }
+
+      imgVec.end.x += stepVec.x
+      imgVec.end.y += stepVec.y
+    }
+    stages.push({ state: curr_state, sp: prev_p, ep: curr_p })
+    curr_state = structuredClone(curr_state)
+
+  }
 
   stages.push({ state: { ...stages[stages.length - 1].state }, sp: 1.0, ep: 1.0 })
 
