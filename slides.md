@@ -364,6 +364,8 @@ img {
 
 # DINOv2 + 
 
+<DINO1Training />
+
 ---
 
 # LOCAP

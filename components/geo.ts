@@ -123,3 +123,17 @@ export function lerpObj<T>(oA: T, oB: T, p: number): T {
     }
     return oC
 }
+
+export const colors = {
+    red: "#e03131",
+    green: "#2f9e44",
+    blue: "#1971c2",
+    orange: "#f08c00",
+}
+
+export const colorsRGB = {
+    red: "224, 49, 49",
+    green: "47, 158, 68",
+    blue: "25, 113, 194",
+    orange: "240, 140, 0",
+}
