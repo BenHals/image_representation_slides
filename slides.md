@@ -294,10 +294,10 @@ layoutClass: gap-16
 <p text="green">Information Dense</p>
 <p text="lime">Similar images are close together</p>
 <p text="yellow">Images are close to relevant text</p>
-<div v-mark.box.red=1>
 <p text="orange">Representations are localized</p>
-</div>
+<div v-mark.box.red=1>
 <p text="red">Representations are spatially aware</p>
+</div>
 
 ::right::
 <br> <br> <br> <br>
@@ -307,7 +307,70 @@ layoutClass: gap-16
 
 # DINO
 
+- CLIP embeddings encode high level details about an image, i.e., the things captured by a caption
+- But things related to the actual visual elements of the image may be lost
+- E.G., what if we wanted to perform image inpainting, or produce a depth map, or compare fine grained details of images?
+- We need a representation that learns these kind of dense, spatially aware features, i.e., is aware of the stucture of images
+- DINO uses <span v-mark.underline.orange>self-supervised learning</span> to train this understanding
+
 ---
+
+# Learning structure
+
+- Two key aspects
+  - What can we change while maintaining the overall structure?
+  - How can we learn the relationships between parts of the input?
+
+---
+
+# Self-Supervised Learning
+
+- Using an image as it's own label
+- An example from language: Masked language training
+
+![](/MLM.svg)
+
+---
+layout: quote
+---
+
+# How can we do this with images?
+
+---
+
+# DINO(v1) + BYOL
+
+- _What can we change while maintaining the overall structure?_
+- Key idea: Apply augmentation that maintains the overall image, and train the model to produce the same representation.
+- _Distilling_ the core structure that is maintained into the model
+
+
+---
+layout: center
+---
+
+# DINO(v1) + BYOL
+
+![](/DINO-1.svg)
+
+<style>
+img {
+  height: 400px
+}
+</style>
+
+
+---
+
+# DINOv2 + 
+
+---
+
+# LOCAP
+
+- How do we represent info about specific locations in an image? What if we want to represent features of patches or even pixels?
+- We _can_ get patch or pixel maps from a CLIP model, but do these really encode much?
+- A caption usually only represents high level info about the image as a whole, so pixel level data in CLIP isn't going to be useful.
 
 # Navigation
 
