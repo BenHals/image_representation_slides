@@ -17,6 +17,11 @@ The last comment block of each slide will be treated as slide notes. It will be 
 -->
 
 ---
+---
+
+<FSThree />
+
+---
 layout: quote
 ---
 # An Image Representation Encodes An Image into a Numeric Format
