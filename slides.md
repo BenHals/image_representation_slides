@@ -310,6 +310,7 @@ layoutClass: gap-16
 - CLIP embeddings encode high level details about an image, i.e., the things captured by a caption
 - But things related to the actual visual elements of the image may be lost
 - E.G., what if we wanted to perform image inpainting, or produce a depth map, or compare fine grained details of images?
+- Or do pixel level semantic segmentation? CLIP would be good for the zero-shot classification part, but not for the segmentation part.
 - We need a representation that learns these kind of dense, spatially aware features, i.e., is aware of the stucture of images
 - DINO uses <span v-mark.underline.orange>self-supervised learning</span> to train this understanding
 
@@ -362,17 +363,109 @@ img {
 
 ---
 
-# DINOv2 + 
+# DINOv1 + BYOL
 
 <DINO1Training />
 
 ---
 
-# LOCAP
+# DINOv2 + iBOT
 
+- DINOv2 distills the invariant parts of image structure into the model, but doesn't learn the relationships between parts of the input
+- Masked language learning does this very well, it forces the model to learn relationships between parts of the input
+- Can we do something similar for images?
+- Vision transformers give us a natural way to do this, masking patch tokens.
+- But what should the result be? We don't have a 'ground truth' token like we do for language
+
+
+---
+
+# DINOv2 + iBOT
+
+- Similar to DINOv1, we can use _self-distillation_
+- The output token for the masked area should be similar to the output token if the area was not masked
+- i.e., the model should learn to be able to inpaint the masked area from surrounding visual ques, learning structure
+- We can use the same student teacher model as before
+
+---
+
+# SILC = DINOv2 + CLIP 
+
+- A downside to a dense representation like DINO is that it doesn't have text understanding like clip.
+- Features represent image structure, but not information like a class label.
+- Can we combine the two?
+- SILC essentially just combines the two losses to get the best of both!
+- TIPS does the same, with the addition of synthetic captions which have more details.
+
+---
+
+# LocCa
+- TIPS creates dense, spatially aware representations, matched with language understanding.
+- But, it's representations may not be _localized_, e.g., the representation of a region may not describe the content of that region.
+- Or, vice-versa, given a describtion can the representation tell us where in the image the described object is?
 - How do we represent info about specific locations in an image? What if we want to represent features of patches or even pixels?
-- We _can_ get patch or pixel maps from a CLIP model, but do these really encode much?
-- A caption usually only represents high level info about the image as a whole, so pixel level data in CLIP isn't going to be useful.
+- Location-aware captioning is a training method designed to encode this information into the representation.
+
+---
+layout: two-cols-header
+layoutClass: gap-16
+---
+
+# Localization
+
+::left::
+
+<p text="green">Information Dense</p>
+<p text="lime">Similar images are close together</p>
+<p text="yellow">Images are close to relevant text</p>
+
+<div v-mark.box.red=1>
+<p text="orange">Representations are localized</p>
+
+</div>
+<p text="red">Representations are spatially aware</p>
+
+::right::
+<br> <br> <br> <br>
+<p v-click=1>LocCa!</p>
+
+---
+
+# LocCa
+
+- The essential idea is kind of 'question answering' based.
+- Three kinds of questions:
+  - Caption: Predict the caption of the image (global)
+  - Reference: Predict the caption of a local region, and the bounding box of that region
+  - Grounded: Predict a bounding box, then the caption for that box
+- The auto-regressive behaviour of the prediction gives these different characteristics
+- Trained on images with regions of interest labelled (using a OWL-CLIP model) with captions.
+  - Images with captions -> n-grams of caption -> Regions where n-gram occurs
+- Essentially distilling these models into the representation.
+
+
+---
+layout: quote
+---
+
+# SigLIP2 
+
+---
+layout: quote
+---
+
+# SigLIP2 (drumroll)
+
+
+---
+layout: quote
+---
+
+# SigLIP2 
+
+## CLIP + DINO+ LocCa
+
+---
 
 # Navigation
 
