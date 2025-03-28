@@ -175,7 +175,7 @@ layoutClass: gap-16
 
 <style>
 #clip {
-  height: 500px
+  height: 450px
 }
 </style>
 
@@ -203,7 +203,7 @@ transition: fade
 
 <style>
 img {
-  height: 424px
+  height: 400px
 }
 </style>
 
@@ -330,6 +330,11 @@ layoutClass: gap-16
 - An example from language: Masked language training
 
 ![](/MLM.svg)
+<style>
+img {
+  height: 300px
+}
+</style>
 
 ---
 layout: quote
@@ -410,7 +415,7 @@ img {
 ![](/x2.png)
 <style>
 img {
-  height: 500px
+  height: 400px
 }
 </style>
 
@@ -466,6 +471,12 @@ layoutClass: gap-16
 
 ![](/locca.svg)
 
+<style>
+img {
+  height: 400px
+}
+</style>
+
 
 ---
 layout: quote
@@ -509,6 +520,60 @@ layoutClass: gap-16
 
 ::right::
 <p v-click=1>SigLIP2!</p>
+
+---
+
+# SigLIP2
+
+- All losses combined, in a nice training recipe
+- Dense, spatially aware, localized, and text aware representations
+- Multilingual
+- Non-fixed aspect ratio
+
+---
+
+# SigLIP2
+
+- Multilingual: WebLI dataset + multilingual Gemma3 tokenizer
+- Staged training
+    - First CLIP and LocCa
+    - Then TIPS loss at 80% of the way through training
+- CLIP loss is actually SigLIP loss
+  - Very slightly different, Softmax => sigmoid
+  - But this actually has quite large implications
+  - Softmax can be interpreted as 'contrastive learning' approach across the whole batch
+  - Wheras sigmoid is more like per example binary classification as match or no match
+
+---
+
+# SigLIP2
+- Non-fixed aspect ratio
+    - Normally, images are resized to a fixed size
+        - Because Training is done in batches, so examples need to be a consistent size so we either need to pad or resize
+    - Also usually use a fixed patch size
+- SigLIP2 introduces NaFlex which unfixes both of these
+
+---
+
+# SigLIP2 Non-fixed aspect ratio
+
+- Combination of:
+  - NaVIT enables non-fixed aspect ratio.
+    - To make each example the same size, we pack multiple images into each sequence to minimize padding
+    - Masking inside the model to maintain separation between images
+  - FlexVIT enables non-fixed patch size
+    - During training patch size is randomly sampled, so learned weights work for a set of patch sizes
+- Instead of packing though, NaFlex resizes dynamically to a patch size that meets the sequence length goal
+  - At inference time, we can dynamically resize the image to get a close to native resolution representation
+
+---
+
+# SigLIP2 Distillation
+- Finally, a method for distilling small variants is proposed, based on ACID and ACED.
+    - Essentially, we want to _cheaply_ distill the large version into a smaller one by using it as a teacher
+    - Normally, you'd train the student to match the logits, or activations of the teacher
+    - Found that a cheaper way is to just use the teacher to curate data for the student, to make it more like the teacher
+        - essentially, pick things that are hard for the student but easy for the teacher
 
 
 ---
